@@ -514,3 +514,135 @@
   -ms-user-select: none;       /* Internet Explorer/Edge */
   user-select: none;           /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
+
+/* ============================================================
+   ESTILOS DA BARRA DE BUSCA E HEADER (ALBUM)
+   ============================================================ */
+
+.header-busca-left {
+  flex: 1; /* Permite que o campo de busca expanda */
+  margin-right: 16px;
+}
+
+.input-busca {
+  flex: 1;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  animation: slideInSearch 0.2s ease-out forwards;
+}
+
+.input-busca:focus {
+  border-color: var(--neon-green);
+}
+
+@keyframes slideInSearch {
+  0% { opacity: 0; transform: translateX(10px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* ============================================================
+   ESTILOS DA BUSCA AVANÇADA (MÚLTIPLOS FILTROS)
+   ============================================================ */
+.header-busca-left {
+  flex: 1; /* Permite que o campo de busca expanda sem quebrar o header */
+  margin-right: 16px;
+}
+
+.input-busca {
+  flex: 1;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  animation: slideInSearch 0.2s ease-out forwards;
+}
+
+.input-busca:focus {
+  border-color: var(--neon-green);
+}
+
+@keyframes slideInSearch {
+  0% { opacity: 0; transform: translateX(10px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.busca-ativa-container {
+  background-color: #0a0a0a;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tags-busca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-termo {
+  background-color: rgba(60, 172, 59, 0.15);
+  color: var(--neon-green);
+  border: 1px solid var(--neon-green);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.busca-botoes {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-busca {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-mais {
+  background-color: var(--card-bg);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-mais:hover {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+}
+
+.btn-novo {
+  background-color: rgba(230, 29, 37, 0.1);
+  color: var(--neon-red);
+  border: 1px solid var(--neon-red);
+}
+
+.btn-novo:hover {
+  background-color: var(--neon-red);
+  color: white;
+}

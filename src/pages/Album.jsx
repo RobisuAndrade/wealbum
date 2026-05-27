@@ -10,11 +10,13 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const [filtroGrupo, setFiltroGrupo] = useState('todos');
   const [mostrarFiltroGrupos, setMostrarFiltroGrupos] = useState(false);
   
+  const [mostrarBusca, setMostrarBusca] = useState(false);
+  const [termoInput, setTermoInput] = useState(''); 
+  const [termosSalvos, setTermosSalvos] = useState([]); 
+
   const [stickerEditando, setStickerEditando] = useState(null); 
   const timerRef = useRef(null);
   const isLongPress = useRef(false);
-  
-  // NOVO: Ref para saber se o usuário está rolando a tela
   const hasMoved = useRef(false);
 
   const somenteLeitura = albumAtivo?.somenteLeitura || false;
@@ -67,15 +69,11 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     });
   };
 
-  // --- LÓGICA REFINADA DE TOQUE E ROLAGEM ---
   const handlePressStart = (id) => {
     if (somenteLeitura) { alert("Você tem permissão apenas de visualização."); return; }
-    
-    hasMoved.current = false; // Zera o movimento ao tocar
+    hasMoved.current = false;
     isLongPress.current = false;
-    
     timerRef.current = setTimeout(() => {
-      // Só abre o Modal se o dedo NÃO tiver movido
       if (!hasMoved.current) {
         isLongPress.current = true;
         setStickerEditando(id);
@@ -83,7 +81,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     }, 500); 
   };
 
-  // Se o usuário mover o dedo (rolar a tela), cancela o toque longo e o clique!
   const handleTouchMove = () => {
     hasMoved.current = true;
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -94,7 +91,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   };
 
   const handleStickerClick = (id) => {
-    // Só adiciona a figurinha se NÃO foi toque longo E se a tela NÃO rolou
     if (!isLongPress.current && !hasMoved.current) {
       adicionarFigurinha(id);
     }
@@ -125,9 +121,52 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const totalFaltantes = TOTAL_FIGURINHAS - totalColadas;
   const qtdRepetidas = Object.values(colecao).filter(qtd => qtd > 1).length; 
 
+  // --- FUNÇÃO DE BUSCA INTELIGENTE (Ignora espaços e diferencia "1" de "12") ---
+  const verificaMatch = (termo, numFigurinha, selecaoNome, selecaoId) => {
+    if (!termo || termo.trim() === '') return false;
+    
+    // Removemos espaços e hifens para "FWC-HISTORY" e "FWC HISTORY" serem a mesma coisa
+    const tLimpo = termo.toLowerCase().replace(/[\s\-]/g, ''); 
+    const numNorm = numFigurinha.toLowerCase().replace(/[\s\-]/g, '');
+    const nomeNorm = selecaoNome.toLowerCase().replace(/[\s\-]/g, '');
+    const idNorm = selecaoId.toLowerCase().replace(/[\s\-]/g, '');
+    
+    // 1. Match exato da string inteira (ex: "bra1" ou "bra 1" acha exatamente "BRA 1")
+    if (numNorm === tLimpo) return true;
+
+    // 2. Se a busca for apenas por letras (ex: "bra", "brasil")
+    const isOnlyLetters = /^[a-zà-ÿ]+$/.test(tLimpo);
+    if (isOnlyLetters) {
+      return nomeNorm.includes(tLimpo) || idNorm.includes(tLimpo);
+    }
+
+    // 3. Se a busca for apenas por número (ex: "1", "12")
+    const isOnlyNumbers = /^\d+$/.test(tLimpo);
+    if (isOnlyNumbers) {
+      // Extrai apenas o número da figurinha para garantir que "1" ache o "1" e não o "12"
+      const stickerNumber = numFigurinha.replace(/[^\d]/g, '');
+      return stickerNumber === tLimpo;
+    }
+
+    // 4. Caso Misto Parcial (Letra + Número. ex: "br 1" acha "BRA 1" mas não "BRA 12")
+    const letrasTermo = tLimpo.replace(/[^a-zà-ÿ]/g, '');
+    const numerosTermo = tLimpo.replace(/[^\d]/g, '');
+    
+    if (letrasTermo && numerosTermo) {
+      const stickerNumber = numFigurinha.replace(/[^\d]/g, '');
+      // O número precisa ser EXATAMENTE igual, a letra pode ser parcial
+      if (stickerNumber === numerosTermo) {
+        return nomeNorm.includes(letrasTermo) || idNorm.includes(letrasTermo);
+      }
+    }
+
+    return false;
+  };
+
   return (
     <div className="app-layout">
       
+      {/* MODAL DE EDIÇÃO */}
       {stickerEditando && (
         <div className="modal-overlay" onClick={() => setStickerEditando(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -152,6 +191,7 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         </div>
       )}
 
+      {/* MODAL DE FILTRO DE GRUPOS */}
       {mostrarFiltroGrupos && (
         <div className="modal-overlay" onClick={() => setMostrarFiltroGrupos(false)}>
           <div className="modal-content modal-filtro-grupos" onClick={e => e.stopPropagation()}>
@@ -180,13 +220,36 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         </div>
       )}
 
+      {/* BARRA SUPERIOR (COM INPUT DE BUSCA) */}
       <header className="top-bar album-header">
-        <div className="header-left">
+        <div className="header-left header-busca-left">
           <ChevronLeft className="menu-icon" strokeWidth={2.5} size={28} onClick={onVoltar} />
-          <span className="brand-text">Copa do Mundo™ 2026</span>
+          
+          {!mostrarBusca ? (
+            <span className="brand-text">Copa do Mundo™ 2026</span>
+          ) : (
+            <input 
+              type="text" 
+              className="input-busca" 
+              placeholder="Ex: BRA 1, FWC..." 
+              value={termoInput}
+              onChange={(e) => setTermoInput(e.target.value)}
+              autoFocus
+            />
+          )}
+
         </div>
         <div className="header-actions">
-          <Search className="action-icon" size={22} />
+          {mostrarBusca ? (
+            <X 
+              className="action-icon ativo" 
+              size={22} 
+              onClick={() => { setMostrarBusca(false); setTermoInput(''); setTermosSalvos([]); }} 
+            />
+          ) : (
+            <Search className="action-icon" size={22} onClick={() => setMostrarBusca(true)} />
+          )}
+          
           <Filter 
             className={`action-icon ${filtroGrupo !== 'todos' ? 'ativo' : ''}`} 
             size={22} 
@@ -195,6 +258,44 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         </div>
       </header>
 
+      {/* BARRA DE FILTROS MÚLTIPLOS (Aparece ao digitar) */}
+      {mostrarBusca && (termoInput.trim() !== '' || termosSalvos.length > 0) && (
+        <div className="busca-ativa-container">
+          <div className="tags-busca">
+            {termosSalvos.map((t, index) => (
+              <span key={index} className="tag-termo">
+                {t} 
+                <X size={14} onClick={() => setTermosSalvos(termosSalvos.filter((_, i) => i !== index))} style={{cursor:'pointer'}} />
+              </span>
+            ))}
+          </div>
+          
+          <div className="busca-botoes">
+            {termoInput.trim() !== '' && (
+              <button 
+                className="btn-busca btn-mais" 
+                onClick={() => {
+                  setTermosSalvos([...termosSalvos, termoInput.trim()]);
+                  setTermoInput('');
+                }}
+              >
+                + Filtrar mais 1
+              </button>
+            )}
+            <button 
+              className="btn-busca btn-novo" 
+              onClick={() => {
+                setTermosSalvos([]);
+                setTermoInput('');
+              }}
+            >
+              Nova Busca
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PÍLULAS DE STATUS */}
       <div className="filtros-rapidos-container">
         <div className="filtros-status">
           <button className={`btn-filtro ${filtroStatus === 'todas' ? 'ativo' : ''}`} onClick={() => setFiltroStatus('todas')}>Todas {TOTAL_FIGURINHAS}</button>
@@ -209,6 +310,45 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         {albumData.map((grupo, index) => {
           if (filtroGrupo !== 'todos' && filtroGrupo !== grupo.id) return null;
 
+          // LÓGICA DE FILTRAGEM (Status + Busca Inteligente)
+          const selecoesComFigurinhas = grupo.selecoes.map(selecao => {
+            const listaBruta = selecao.figurinhasPersonalizadas || gerarFigurinhas(selecao.id, selecao.total);
+            
+            const filtradas = listaBruta.filter(num => {
+              const qtd = colecao[num] || 0;
+              
+              // 1. Verifica as Pílulas
+              if (filtroStatus === 'coladas' && qtd === 0) return false;
+              if (filtroStatus === 'faltantes' && qtd > 0) return false;
+              if (filtroStatus === 'repetidas' && qtd <= 1) return false;
+
+              // 2. Verifica a Busca Múltipla e Sem Espaços
+              const buscaAtiva = termoInput.trim() !== '' || termosSalvos.length > 0;
+              
+              if (buscaAtiva) {
+                let match = false;
+                
+                // Checa se a figurinha bate com ALGUM dos filtros salvos
+                if (termosSalvos.length > 0) {
+                  match = termosSalvos.some(t => verificaMatch(t, num, selecao.nome, selecao.id));
+                }
+                
+                // Se ainda não bateu, tenta bater com o que a pessoa está digitando agora
+                if (!match && termoInput.trim() !== '') {
+                  match = verificaMatch(termoInput, num, selecao.nome, selecao.id);
+                }
+                
+                if (!match) return false; // Se não tem em nenhum lugar da busca, oculta a figurinha!
+              }
+
+              return true;
+            });
+
+            return { ...selecao, figurinhasFiltradas: filtradas };
+          }).filter(s => s.figurinhasFiltradas.length > 0); 
+
+          if (selecoesComFigurinhas.length === 0) return null;
+
           return (
             <div key={grupo.id} className="group-container">
               
@@ -217,61 +357,45 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
                 <p>{grupo.subtitulo}</p>
               </div>
 
-              {grupo.selecoes.map((selecao) => {
-                const listaBruta = selecao.figurinhasPersonalizadas || gerarFigurinhas(selecao.id, selecao.total);
-                
-                const figurinhasFiltradas = listaBruta.filter(num => {
-                  const qtd = colecao[num] || 0;
-                  if (filtroStatus === 'todas') return true;
-                  if (filtroStatus === 'coladas') return qtd > 0;
-                  if (filtroStatus === 'faltantes') return qtd === 0;
-                  if (filtroStatus === 'repetidas') return qtd > 1;
-                  return true;
-                });
+              {selecoesComFigurinhas.map((selecao) => (
+                <section key={selecao.id} className="team-section">
+                  
+                  <div className="team-title">
+                    <h3>{selecao.nome}</h3>
+                    <span className="team-badge">{selecao.id}</span>
+                  </div>
 
-                if (figurinhasFiltradas.length === 0) return null;
-
-                return (
-                  <section key={selecao.id} className="team-section">
-                    
-                    <div className="team-title">
-                      <h3>{selecao.nome}</h3>
-                      <span className="team-badge">{selecao.id}</span>
-                    </div>
-
-                    <div className="stickers-grid">
-                      {figurinhasFiltradas.map((num, i) => {
-                        const qtd = colecao[num] || 0;
-                        const estaColada = qtd > 0;
-                        
-                        return (
-                          <div 
-                            key={i} 
-                            className={`sticker-slot ${estaColada ? 'colada' : 'vazia'} ${selecao.isCromada ? 'sticker-cromada' : ''}`}
-                            style={{ background: selecao.gradiente }}
-                            // Lógica inteligente contra cliques acidentais:
-                            onMouseDown={() => handlePressStart(num)}
-                            onMouseUp={handlePressEnd}
-                            onMouseLeave={handleTouchMove} 
-                            onTouchStart={() => handlePressStart(num)}
-                            onTouchMove={handleTouchMove} // Cancela ação se o usuário arrastar (scroll)
-                            onTouchEnd={handlePressEnd}
-                            onClick={() => handleStickerClick(num)}
-                            onContextMenu={(e) => e.preventDefault()}
-                          >
-                            {estaColada && <span className="badge-repetida">x{qtd}</span>}
-                            
-                            <div className="sticker-inner">
-                              <span className="sticker-number">{num}</span>
-                            </div>
+                  <div className="stickers-grid">
+                    {selecao.figurinhasFiltradas.map((num, i) => {
+                      const qtd = colecao[num] || 0;
+                      const estaColada = qtd > 0;
+                      
+                      return (
+                        <div 
+                          key={i} 
+                          className={`sticker-slot ${estaColada ? 'colada' : 'vazia'} ${selecao.isCromada ? 'sticker-cromada' : ''}`}
+                          style={{ background: selecao.gradiente }}
+                          onMouseDown={() => handlePressStart(num)}
+                          onMouseUp={handlePressEnd}
+                          onMouseLeave={handleTouchMove} 
+                          onTouchStart={() => handlePressStart(num)}
+                          onTouchMove={handleTouchMove} 
+                          onTouchEnd={handlePressEnd}
+                          onClick={() => handleStickerClick(num)}
+                          onContextMenu={(e) => e.preventDefault()}
+                        >
+                          {estaColada && <span className="badge-repetida">x{qtd}</span>}
+                          
+                          <div className="sticker-inner">
+                            <span className="sticker-number">{num}</span>
                           </div>
-                        )
-                      })}
-                    </div>
+                        </div>
+                      )
+                    })}
+                  </div>
 
-                  </section>
-                );
-              })}
+                </section>
+              ))}
 
               {index < albumData.length - 1 && filtroGrupo === 'todos' && (
                 <div className="group-divider"></div>
