@@ -431,3 +431,322 @@ body {
 
 .extra-info-home .info-number { font-size: 1.1rem; font-weight: 900; color: white; }
 .extra-info-home .info-label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; }
+
+/* ============================================================
+   ESTILOS DE EDIÇÃO E EXCLUSÃO (HOME)
+   ============================================================ */
+
+/* Alinhamento do Título com o Lápis */
+.album-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.album-title-row h3 {
+  margin: 0; /* Remove a margem original para alinhar com o botão */
+}
+
+.btn-edit-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-edit-icon:hover {
+  color: var(--neon-green);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Botão de Excluir Inicial */
+.btn-deletar {
+  background: transparent;
+  border: 1px solid var(--neon-red);
+  color: var(--neon-red);
+  border-radius: 12px;
+  width: 100%;
+  padding: 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-deletar:hover {
+  background-color: rgba(230, 29, 37, 0.1);
+}
+
+/* Área de Confirmação (Tem Certeza?) */
+.delete-confirm-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.delete-confirm-box p {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.modal-controls-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.btn-cancelar {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: white;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px;
+}
+
+.btn-deletar-confirm {
+  flex: 1;
+  background: var(--neon-red);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 12px;
+}
+
+/* ============================================================
+   ESTILOS DO MENU HAMBÚRGUER LATERAL (DRAWER)
+   ============================================================ */
+.menu-drawer-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-start;
+  backdrop-filter: blur(4px);
+}
+
+.menu-drawer-content {
+  background-color: var(--card-bg);
+  width: 280px;
+  height: 100%;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  animation: slideInLeft 0.25s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 16px;
+}
+
+.drawer-header h3 {
+  font-family: 'Outfit', sans-serif;
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.btn-fechar-drawer {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.drawer-body {
+  flex: 1;
+  padding-top: 24px;
+}
+
+/* Formulário de Login */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-title {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-login {
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.input-login:focus {
+  border-color: var(--neon-green);
+}
+
+/* Área de Perfil Autenticado */
+.perfil-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 10px;
+}
+
+.perfil-avatar {
+  width: 64px;
+  height: 64px;
+  background-color: var(--neon-green);
+  color: black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin-bottom: 14px;
+  box-shadow: 0 0 15px rgba(60, 172, 59, 0.3);
+}
+
+.perfil-box h4 {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  margin: 0 0 10px 0;
+}
+
+.perfil-info-text {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-top: 12px;
+}
+
+/* Selo Supremo Especial */
+.badge-supremo {
+  background-color: rgba(253, 250, 0, 0.1);
+  border: 1px solid var(--neon-yellow);
+  color: var(--neon-yellow);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Alternador de Modo (Login / Cadastro) */
+.toggle-login-mode {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+  margin-top: 14px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  user-select: none;
+}
+
+.toggle-login-mode strong {
+  color: var(--neon-green);
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+/* ============================================================
+   ESTILOS DE GERENCIAMENTO DE ACESSO
+   ============================================================ */
+.lista-acessos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.acesso-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.acesso-nome {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.acesso-select {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px;
+  border-radius: 6px;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+}
+
+.acesso-select:focus {
+  border-color: var(--neon-green);
+}
+
+.badge-leitura {
+  font-size: 0.65rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}

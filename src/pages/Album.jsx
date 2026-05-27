@@ -1,13 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Search, Filter, Minus, Plus, X } from 'lucide-react';
-// IMPORTANDO O FIREBASE (Banco de Dados)
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import './Album.css';
 
-// Recebendo o albumAtivo que veio lá da Home.jsx via App.jsx
 const Album = ({ onVoltar, albumData: albumAtivo }) => {
-  // --- 1. ESTADOS DO APLICATIVO ---
   const [colecao, setColecao] = useState({}); 
   const [filtroStatus, setFiltroStatus] = useState('todas'); 
   const [filtroGrupo, setFiltroGrupo] = useState('todos');
@@ -17,30 +14,23 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const timerRef = useRef(null);
   const isLongPress = useRef(false);
 
-  // --- 2. SINCRONIZAR COM O BANCO DE DADOS ---
-  // Puxar as figurinhas já coladas deste álbum específico
+  // NOVO: Verifica se o usuário atual só tem permissão de leitura neste álbum
+  const somenteLeitura = albumAtivo?.somenteLeitura || false;
+
   useEffect(() => {
     if (!albumAtivo || !albumAtivo.id) return;
-
     const docRef = doc(db, "albuns", albumAtivo.id);
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-        const dadosDoBanco = docSnap.data();
-        // Atualiza a tela com as figurinhas que estão salvas na nuvem
-        setColecao(dadosDoBanco.colecao || {});
+        setColecao(docSnap.data().colecao || {});
       }
     });
-
     return () => unsubscribe();
   }, [albumAtivo]);
 
-  // Função que manda a atualização para a nuvem
   const salvarNoBanco = async (novaColecao) => {
     if (!albumAtivo || !albumAtivo.id) return;
-    
     const docRef = doc(db, "albuns", albumAtivo.id);
-    
-    // Calcula as porcentagens para a tela Home atualizar sozinha!
     const totalColadas = Object.keys(novaColecao).length;
     const porcentagem = ((totalColadas / 994) * 100).toFixed(0);
     const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute:'2-digit' });
@@ -48,38 +38,36 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     try {
       await updateDoc(docRef, {
         colecao: novaColecao,
-        concluido: porcentagem, // Atualiza a barra de progresso
+        concluido: porcentagem,
         ultimaAlteracao: `Hoje às ${horaAtual}`
       });
-    } catch (error) {
-      console.error("Erro ao salvar figurinha: ", error);
-    }
+    } catch (error) { console.error("Erro ao salvar", error); }
   };
 
-  // --- 3. FUNÇÕES DE INTERAÇÃO (AGORA SALVAM NO BANCO) ---
+  // Funções com bloqueio de segurança
   const adicionarFigurinha = (id) => {
+    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
     setColecao(prev => {
       const nova = { ...prev, [id]: (prev[id] || 0) + 1 };
-      salvarNoBanco(nova); // Envia pro Firebase
+      salvarNoBanco(nova);
       return nova;
     });
   };
 
   const removerFigurinha = (id) => {
+    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
     setColecao(prev => {
       const atual = prev[id] || 0;
       const nova = { ...prev };
-      if (atual <= 1) {
-        delete nova[id];
-      } else {
-        nova[id] = atual - 1;
-      }
-      salvarNoBanco(nova); // Envia pro Firebase
+      if (atual <= 1) delete nova[id];
+      else nova[id] = atual - 1;
+      salvarNoBanco(nova);
       return nova;
     });
   };
 
   const handlePressStart = (id) => {
+    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
       isLongPress.current = true;
@@ -87,17 +75,12 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     }, 500); 
   };
 
-  const handlePressEnd = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
+  const handlePressEnd = () => { if (timerRef.current) clearTimeout(timerRef.current); };
 
   const handleStickerClick = (id) => {
-    if (!isLongPress.current) {
-      adicionarFigurinha(id);
-    }
+    if (!isLongPress.current) adicionarFigurinha(id);
   };
 
-  // --- 4. DADOS DAS FIGURINHAS (INTACTOS) ---
   const albumData = [
     { id: 'pagina-inicial', titulo: 'Página Inicial', subtitulo: 'Especiais • 9 Figurinhas', selecoes: [{ id: 'FWC-INICIO', nome: 'FIFA World Cup™', figurinhasPersonalizadas: ['FWC 00', 'FWC 1', 'FWC 2', 'FWC 3', 'FWC 4', 'FWC 5', 'FWC 6', 'FWC 7', 'FWC 8'], gradiente: 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 50%, #B38728 100%)', isCromada: true }] },
     { id: 'grupo-a', titulo: 'Grupo A', subtitulo: '4 Seleções • 80 Figurinhas', selecoes: [{ id: 'MEX', nome: 'México', total: 20, gradiente: 'linear-gradient(135deg, #006847 0%, #111111 40%, #ce1126 100%)' }, { id: 'RSA', nome: 'África do Sul', total: 20, gradiente: 'linear-gradient(135deg, #007749 0%, #111111 40%, #ffb81c 100%)' }, { id: 'KOR', nome: 'Coreia do Sul', total: 20, gradiente: 'linear-gradient(135deg, #c60c30 0%, #111111 40%, #003478 100%)' }, { id: 'CZE', nome: 'Rep. Tcheca', total: 20, gradiente: 'linear-gradient(135deg, #d7141a 0%, #111111 40%, #11457e 100%)' }] },
@@ -118,7 +101,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
 
   const gerarFigurinhas = (prefixo, total) => Array.from({ length: total }, (_, i) => `${prefixo} ${i + 1}`);
 
-  // --- 5. CÁLCULOS DINÂMICOS ---
   const TOTAL_FIGURINHAS = 994;
   const totalColadas = Object.keys(colecao).length;
   const totalFaltantes = TOTAL_FIGURINHAS - totalColadas;
