@@ -1,0 +1,433 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&display=swap');
+
+:root {
+  --bg-deep-green: #041608;
+  --bg-dark-blend: #0a0a0a;
+  
+  --neon-green: #3CAC3B;
+  --neon-yellow: #fdfa00;
+  --neon-red: #E61D25;
+  
+  --fifa-blue: #0F4C81;
+  --fifa-purple: #81329A;
+  
+  --card-bg: #111111;
+  --text-primary: #FFFFFF;
+  --text-muted: #888888;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at center, var(--bg-deep-green) 0%, var(--bg-dark-blend) 100%);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px; 
+  margin: 0 auto;
+  background-color: rgba(10, 10, 10, 0.9); 
+  box-shadow: 0 0 50px rgba(60, 172, 59, 0.15);
+  position: relative;
+}
+
+/* --- BARRA SUPERIOR --- */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(10, 10, 10, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-icon { color: white; width: 26px; height: 26px; cursor: pointer; }
+.app-logo { height: 32px; max-width: 100px; object-fit: contain; }
+
+.brand-text {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* --- CONTEÚDO CENTRAL --- */
+.main-content {
+  flex: 1;
+  padding: 24px 20px;
+}
+
+.section-title {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+/* O Card do Álbum */
+.album-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.album-card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.album-card:hover {
+  background-color: #1a1a1a;
+}
+
+.album-cover {
+  width: 60px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  background-color: #000;
+}
+
+.album-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.album-info { flex: 1; }
+
+.album-info h3 {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  font-size: 1.05rem;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--neon-green);
+}
+
+.progress-text { color: var(--neon-green); font-size: 0.75rem; font-weight: 700; }
+.album-stats { color: var(--text-muted); font-size: 0.8rem; margin: 0; }
+.arrow-icon { color: #555; }
+
+/* --- NOVO LAYOUT DE ESTATÍSTICAS (GRID) --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+  gap: 10px;
+}
+
+.stat-sticker {
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF; /* Borda branca fina estilo figurinha */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brilho da figurinha */
+.stat-sticker::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 60%);
+  transform: rotate(30deg);
+  pointer-events: none;
+}
+
+/* Faz a "Faltam" ocupar a linha toda embaixo */
+.full-width {
+  grid-column: span 2;
+  flex-direction: row; /* Coloca número e texto lado a lado */
+  gap: 12px;
+  padding: 14px;
+}
+
+.info-number {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.5rem; /* Menor e mais delicado */
+  font-weight: 900;
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.info-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin-top: 2px;
+}
+
+/* Cores Refinadas da Copa */
+.sticker-coladas { background: linear-gradient(135deg, #1e7029, var(--neon-green)); }
+.sticker-repetidas { background: linear-gradient(135deg, #a61218, var(--neon-red)); }
+.sticker-faltam { background: linear-gradient(135deg, var(--fifa-blue), var(--fifa-purple)); }
+.sticker-faltam .info-number, .sticker-faltam .info-label { color: var(--neon-yellow); }
+
+/* --- DIVISÓRIA --- */
+.divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 24px 0;
+}
+
+/* --- ADICIONAR NOVO ÁLBUM (ESPAÇOS EM BRANCO) --- */
+.add-new-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-new-card {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #888;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.add-new-card:hover {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  background-color: rgba(60, 172, 59, 0.05);
+}
+
+.secondary-add {
+  padding: 16px;
+  font-size: 0.85rem;
+  color: #666;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.secondary-add:hover {
+  border-color: var(--fifa-blue);
+  color: var(--fifa-blue);
+}
+
+/* --- MENU INFERIOR --- */
+.bottom-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0 20px 0;
+  background: rgba(15, 15, 15, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* --- ESTILO DO ÍCONE DE COMPARTILHAR NO HEADER --- */
+.header-action-icon {
+  color: white;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.header-action-icon:hover {
+  color: var(--neon-green);
+  transform: scale(1.1);
+}
+
+.nav-item.active { color: var(--neon-green); font-weight: 600; }
+.nav-item:hover:not(.active) { color: #aaa; }
+
+/* ============================================================
+   ESTILOS NOVOS DA HOME (INPUT, EMPTY STATE E MODAL)
+   ============================================================ */
+
+/* Tela Vazia quando não tem álbum */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.empty-state span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Aproveitando o estilo de Modal que já tínhamos no Album.css para a Home */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px 24px;
+  width: 90%; max-width: 320px;
+  text-align: center; position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: modalPop 0.2s ease-out forwards;
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.fechar-modal {
+  position: absolute; top: 16px; right: 16px;
+  background: transparent; border: none;
+  color: var(--text-muted); cursor: pointer;
+}
+
+.modal-title { font-family: 'Outfit', sans-serif; color: white; margin: 0 0 8px 0; }
+.modal-subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 20px 0; }
+
+.input-nome-album {
+  width: 100%;
+  background-color: rgba(0,0,0,0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input-nome-album:focus {
+  border-color: var(--neon-green);
+}
+
+.btn-concluir {
+  background-color: var(--neon-green);
+  color: #000;
+  border: none; border-radius: 12px;
+  width: 100%; padding: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem; font-weight: 700;
+  cursor: pointer;
+}
+
+/* Espaçamento do card na lista */
+.album-wrapper { margin-bottom: 20px; }
+
+/* Código com estilo */
+.album-code {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 4px 0 0 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Estatísticas que voltaram para a Home */
+.extra-info-home {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+/* Reaproveita o estilo das figurinhas do Album.css, mas adaptado para a Home */
+.extra-info-home .info-box {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.extra-info-home .info-number { font-size: 1.1rem; font-weight: 900; color: white; }
+.extra-info-home .info-label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; }

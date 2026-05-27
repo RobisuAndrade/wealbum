@@ -1,0 +1,499 @@
+/* ============================================================
+   ESTILOS ESPECÍFICOS DA PÁGINA DO ÁLBUM
+   ============================================================ */
+
+.album-header {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.action-icon {
+  color: white;
+  cursor: pointer;
+}
+
+.album-content {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto; /* Permite rolar a página para baixo */
+}
+
+/* Cabeçalho do Grupo */
+.grupo-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.grupo-header h2 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--neon-yellow);
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.grupo-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 4px 0 0 0;
+}
+
+/* Seção de cada Seleção */
+.team-section {
+  margin-bottom: 40px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.team-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.team-title h3 {
+  font-family: 'Outfit', sans-serif;
+  color: white;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.team-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* -------------------------------------
+   GRID DE FIGURINHAS
+-------------------------------------- */
+.stickers-grid {
+  display: grid;
+  /* 4 colunas no celular fica perfeito para ver bastante coisa */
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 8px;
+}
+
+.sticker-slot {
+  aspect-ratio: 1 / 1.1; /* Formato quadradinho, levemente retangular */
+  border-radius: 6px;
+  padding: 2px; /* Espaço para o gradiente da bandeira aparecer como borda grossa */
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.sticker-slot:active {
+  transform: scale(0.95);
+}
+
+/* Essa é a parte de dentro que fica escura para podermos ler o MEX 01 */
+.sticker-inner {
+  background-color: rgba(15, 15, 15, 0.85); /* Fundo quase preto transparente */
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.sticker-number {
+  font-family: 'Outfit', sans-serif;
+  color: #FFFFFF; /* Branco puro e opaco para dar contraste máximo */
+  font-size: 0.85rem; /* Aumentei um pouquinho a fonte para facilitar ainda mais */
+  font-weight: 900; /* Extra negrito (Black) */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Sombreado preto para garantir leitura perfeita contra o fundo */
+}
+
+/* ============================================================
+   ESTILOS DE DIVISÃO DE GRUPOS (CARDS)
+   ============================================================ */
+
+.group-container {
+  /* Mantém um espaçamento inferior para o grupo respirar antes da divisória */
+  margin-bottom: 24px; 
+}
+
+.group-divider {
+  height: 4px;
+  /* Cria uma linha suave que some nas pontas, dando efeito de separação de página/card */
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  margin: 40px 0;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   ESTILOS DAS FIGURINHAS CROMADAS (ESPECIAIS)
+   ============================================================ */
+
+.sticker-cromada {
+  /* Substitui a borda padrão por uma dourada */
+  border: 2px solid #FFD700 !important; 
+  /* Brilho externo dourado para destacar das comuns */
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3), inset 0 2px 5px rgba(0,0,0,0.5); 
+}
+
+.sticker-cromada .sticker-number {
+  /* A fonte fica num tom de ouro/amarelo para combinar */
+  color: #FFD700; 
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* ============================================================
+   ESTILOS DE INTERAÇÃO (COLADAS E REPETIDAS)
+   ============================================================ */
+
+/* Quando a figurinha está colada (usuário clicou) */
+.sticker-slot.colada {
+  border: 3px solid #FFFFFF; /* AUMENTADO PARA 3PX: Borda branca bem mais forte e destacada */
+  transform: scale(1.02); 
+  box-shadow: 0 4px 12px rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.6); /* Leve brilho branco na sombra */
+}
+
+/* O resto abaixo continua exatamente igual, não precisa alterar */
+.sticker-slot.colada .sticker-inner {
+  background-color: transparent; 
+}
+
+/* O Segredo: Esconde a parte preta do meio para a cor da bandeira brilhar 100% */
+.sticker-slot.colada .sticker-inner {
+  background-color: transparent; 
+}
+
+/* O número fica bem forte com uma sombra para não sumir no fundo colorido */
+.sticker-slot.colada .sticker-number {
+  color: #FFFFFF;
+  font-size: 1rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 4px rgba(0,0,0,0.8);
+}
+
+/* Selo Amarelo de Repetidas */
+.badge-repetida {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--neon-yellow);
+  color: #000;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  z-index: 5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  border: 2px solid #000;
+}
+
+/* ============================================================
+   ESTILOS DO MENU DE FILTROS
+   ============================================================ */
+.filtros-container {
+  background-color: var(--card-bg);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 60px; /* Fica preso na tela logo abaixo do Header */
+  z-index: 9;
+}
+
+/* Botões de Status (Pílulas) */
+.filtros-status {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filtros-status::-webkit-scrollbar {
+  display: none; /* Esconde a barra de rolagem no celular */
+}
+
+.btn-filtro {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-filtro.ativo {
+  background-color: var(--neon-green);
+  color: #000;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 8px rgba(60, 172, 59, 0.4);
+}
+
+/* Linha do Select e Resumo */
+.filtros-linha-dois {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filtro-grupo-select {
+  background-color: rgba(0,0,0,0.5);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.resumo-stats {
+  display: flex;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.resumo-stats strong {
+  color: white;
+  font-size: 1rem;
+}
+
+/* ============================================================
+   ESTILOS DO MODAL (CLICA E SEGURA / JANELINHA)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px 24px;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: modalPop 0.2s ease-out forwards;
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.fechar-modal {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal-title {
+  font-family: 'Outfit', sans-serif;
+  color: white;
+  font-size: 1.8rem;
+  margin: 0 0 8px 0;
+}
+
+.modal-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 24px 0;
+}
+
+.modal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.btn-controle {
+  background-color: #1a1a1a;
+  color: var(--neon-green);
+  border: 2px solid var(--neon-green);
+  border-radius: 50%;
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.btn-controle:active {
+  transform: scale(0.9);
+  background-color: var(--neon-green);
+  color: #000;
+}
+
+.modal-quantidade {
+  font-family: 'Outfit', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: white;
+  min-width: 60px;
+}
+
+.btn-concluir {
+  background-color: var(--neon-green);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  width: 100%;
+  padding: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ============================================================
+   NOVOS ESTILOS DE FILTROS
+   ============================================================ */
+   
+/* Dropdown do Topo */
+.filtro-topo-container {
+  position: relative;
+}
+
+.action-icon.ativo {
+  color: var(--neon-green);
+}
+
+
+/* Container Fixo das Pílulas */
+.filtros-rapidos-container {
+  background-color: rgba(10, 10, 10, 0.95);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 60px; /* Gruda logo abaixo do Header */
+  z-index: 9;
+}
+
+.filtros-status {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.filtros-status::-webkit-scrollbar { display: none; }
+
+.btn-filtro {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-filtro.ativo {
+  background-color: var(--neon-green);
+  color: #000;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 8px rgba(60, 172, 59, 0.4);
+}
+
+/* ============================================================
+   ESTILOS DA NOVA TELA (MODAL) DE FILTRO DE GRUPOS
+   ============================================================ */
+   
+.modal-filtro-grupos {
+  max-height: 85vh; /* Quase a altura inteira da tela */
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+.lista-grupos-filtro {
+  overflow-y: auto; /* Permite rolar a lista de grupos caso não caiba */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  padding-right: 8px;
+}
+
+/* Oculta a barrinha de rolagem pra ficar mais clean */
+.lista-grupos-filtro::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-grupo-filtro {
+  background-color: #1a1a1a;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 16px;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between; /* Texto de um lado, subtitulo do outro */
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.filtro-subtext {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.btn-grupo-filtro.ativo {
+  background-color: rgba(60, 172, 59, 0.1);
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+}
+
+.btn-grupo-filtro.ativo .filtro-subtext {
+  color: var(--neon-green);
+}
+
+/* Garante que o ícone de filtro no topo fique iluminado se houver grupo selecionado */
+.action-icon.ativo {
+  color: var(--neon-green);
+}
