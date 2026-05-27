@@ -497,3 +497,20 @@
 .action-icon.ativo {
   color: var(--neon-green);
 }
+
+/* ============================================================
+   ANTI-SELEÇÃO E USABILIDADE MOBILE
+   ============================================================ */
+
+/* Impede seleção de texto ao segurar o clique/touch nas figurinhas */
+.sticker-slot,
+.sticker-inner,
+.sticker-number,
+.badge-repetida {
+  -webkit-touch-callout: none; /* iOS Safari: Desabilita o popup (copiar, etc) */
+  -webkit-user-select: none;   /* Safari */
+  -khtml-user-select: none;    /* Konqueror HTML */
+  -moz-user-select: none;      /* Old versions of Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+  user-select: none;           /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}

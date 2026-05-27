@@ -13,8 +13,10 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const [stickerEditando, setStickerEditando] = useState(null); 
   const timerRef = useRef(null);
   const isLongPress = useRef(false);
+  
+  // NOVO: Ref para saber se o usuário está rolando a tela
+  const hasMoved = useRef(false);
 
-  // NOVO: Verifica se o usuário atual só tem permissão de leitura neste álbum
   const somenteLeitura = albumAtivo?.somenteLeitura || false;
 
   useEffect(() => {
@@ -44,7 +46,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     } catch (error) { console.error("Erro ao salvar", error); }
   };
 
-  // Funções com bloqueio de segurança
   const adicionarFigurinha = (id) => {
     if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
     setColecao(prev => {
@@ -66,19 +67,37 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
     });
   };
 
+  // --- LÓGICA REFINADA DE TOQUE E ROLAGEM ---
   const handlePressStart = (id) => {
-    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
+    if (somenteLeitura) { alert("Você tem permissão apenas de visualização."); return; }
+    
+    hasMoved.current = false; // Zera o movimento ao tocar
     isLongPress.current = false;
+    
     timerRef.current = setTimeout(() => {
-      isLongPress.current = true;
-      setStickerEditando(id);
+      // Só abre o Modal se o dedo NÃO tiver movido
+      if (!hasMoved.current) {
+        isLongPress.current = true;
+        setStickerEditando(id);
+      }
     }, 500); 
   };
 
-  const handlePressEnd = () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  // Se o usuário mover o dedo (rolar a tela), cancela o toque longo e o clique!
+  const handleTouchMove = () => {
+    hasMoved.current = true;
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
+  const handlePressEnd = () => { 
+    if (timerRef.current) clearTimeout(timerRef.current); 
+  };
 
   const handleStickerClick = (id) => {
-    if (!isLongPress.current) adicionarFigurinha(id);
+    // Só adiciona a figurinha se NÃO foi toque longo E se a tela NÃO rolou
+    if (!isLongPress.current && !hasMoved.current) {
+      adicionarFigurinha(id);
+    }
   };
 
   const albumData = [
@@ -230,10 +249,12 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
                             key={i} 
                             className={`sticker-slot ${estaColada ? 'colada' : 'vazia'} ${selecao.isCromada ? 'sticker-cromada' : ''}`}
                             style={{ background: selecao.gradiente }}
+                            // Lógica inteligente contra cliques acidentais:
                             onMouseDown={() => handlePressStart(num)}
                             onMouseUp={handlePressEnd}
-                            onMouseLeave={handlePressEnd}
+                            onMouseLeave={handleTouchMove} 
                             onTouchStart={() => handlePressStart(num)}
+                            onTouchMove={handleTouchMove} // Cancela ação se o usuário arrastar (scroll)
                             onTouchEnd={handlePressEnd}
                             onClick={() => handleStickerClick(num)}
                             onContextMenu={(e) => e.preventDefault()}
