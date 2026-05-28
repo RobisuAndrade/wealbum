@@ -1,0 +1,282 @@
+/* ============================================================
+   ESTILOS DA TELA DE TROCA INTERATIVA
+   ============================================================ */
+.troca-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.troca-subtitle {
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  margin: -10px 0 10px 0;
+  line-height: 1.4;
+}
+
+.troca-card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.troca-label {
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.troca-select {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  outline: none;
+}
+
+.troca-select:focus { border-color: var(--neon-green); }
+
+.troca-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.troca-box {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.box-entrada { border-left: 3px solid var(--neon-green); }
+.box-saida { border-left: 3px solid var(--neon-red); }
+
+.troca-box-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.troca-box-header h3 {
+  color: white;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+}
+
+.troca-dica {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+}
+
+.busca-troca-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.busca-troca-wrapper:focus-within { border-color: var(--neon-green); }
+
+.input-busca-troca {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+/* ============================================================
+   LEGENDA E ÍCONES DE STATUS (NOVO)
+   ============================================================ */
+.troca-legenda {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.icon-green {
+  color: var(--neon-green);
+  filter: drop-shadow(0 0 4px rgba(60, 172, 59, 0.6));
+}
+
+.icon-red {
+  color: var(--neon-red);
+  filter: drop-shadow(0 0 4px rgba(230, 29, 37, 0.6));
+}
+
+/* ============================================================
+   LISTA E BOTÕES
+   ============================================================ */
+.lista-tags-scroller {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lista-tags-scroller::-webkit-scrollbar {
+  width: 4px;
+}
+.lista-tags-scroller::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.btn-tag-troca {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-tag-troca:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+.selecionada-saida {
+  background-color: rgba(230, 29, 37, 0.2) !important;
+  border-color: var(--neon-red) !important;
+  color: var(--neon-red) !important;
+}
+
+.selecionada-entrada {
+  background-color: rgba(60, 172, 59, 0.2) !important;
+  border-color: var(--neon-green) !important;
+  color: var(--neon-green) !important;
+}
+
+.tag-qtd-badge {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #aaa;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.selecionada-saida .tag-qtd-badge {
+  background-color: var(--neon-red);
+  color: white;
+}
+
+.btn-processar-troca {
+  background-color: var(--neon-green);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  transition: opacity 0.2s;
+}
+
+.btn-processar-troca:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   ESTILOS DO MODAL CUSTOMIZADO (ALERTAS E CONFIRMAÇÕES)
+   ============================================================ */
+
+/* Reutilizando as variáveis e estrutura global, mas focando nos botões de ação */
+.modal-controls-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-cancelar {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: white;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.btn-confirmar-acao {
+  flex: 1;
+  background: var(--neon-yellow);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 12px;
+  transition: transform 0.1s;
+}
+
+.btn-confirmar-acao:active {
+  transform: scale(0.95);
+}

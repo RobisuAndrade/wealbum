@@ -4,30 +4,39 @@ import Album from './pages/Album';
 import './App.css';
 
 function App() {
-  // Estado que controla qual tela está aberta ('home' ou 'album')
   const [telaAtual, setTelaAtual] = useState('home');
-  // Estado para saber qual álbum foi clicado (para futuramente carregar os dados dele)
   const [albumSelecionado, setAlbumSelecionado] = useState(null);
+  const [abaDestino, setAbaDestino] = useState('inicio');
+  
+  // NOVO: Guarda o ID do álbum para pré-selecionar na tela de Troca
+  const [albumParaTroca, setAlbumParaTroca] = useState(null);
 
-  // Função para abrir o álbum
   const abrirAlbum = (album) => {
     setAlbumSelecionado(album);
     setTelaAtual('album');
   };
 
-  // Função para voltar para a Home
   const voltarHome = () => {
     setAlbumSelecionado(null);
+    setAlbumParaTroca(null); // Limpa o ID se o usuário voltar normalmente
+    setAbaDestino('inicio');
+    setTelaAtual('home');
+  };
+
+  const irParaTroca = () => {
+    // Salva o ID do álbum atual ANTES de fechar a tela do álbum
+    setAlbumParaTroca(albumSelecionado?.id || null);
+    setAlbumSelecionado(null);
+    setAbaDestino('troca');
     setTelaAtual('home');
   };
 
   return (
     <div>
-      {/* Se a tela atual for 'home', renderiza o componente Home */}
-      {telaAtual === 'home' && <Home onAbrirAlbum={abrirAlbum} />}
+      {/* Passamos o albumParaTroca para a Home */}
+      {telaAtual === 'home' && <Home onAbrirAlbum={abrirAlbum} abaInicial={abaDestino} albumParaTroca={albumParaTroca} />}
       
-      {/* Se a tela atual for 'album', renderiza o componente Album */}
-      {telaAtual === 'album' && <Album onVoltar={voltarHome} albumData={albumSelecionado} />}
+      {telaAtual === 'album' && <Album onVoltar={voltarHome} onIrParaTroca={irParaTroca} albumData={albumSelecionado} />}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Search, Filter, Minus, Plus, X } from 'lucide-react';
-import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { ChevronLeft, Search, Filter, Minus, Plus, X, Repeat, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore'; 
 import { db } from '../firebase';
 import './Album.css';
 
-const Album = ({ onVoltar, albumData: albumAtivo }) => {
+const Album = ({ onVoltar, onIrParaTroca, albumData: albumAtivo }) => {
   const [colecao, setColecao] = useState({}); 
   const [filtroStatus, setFiltroStatus] = useState('todas'); 
   const [filtroGrupo, setFiltroGrupo] = useState('todos');
@@ -18,6 +18,8 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const timerRef = useRef(null);
   const isLongPress = useRef(false);
   const hasMoved = useRef(false);
+
+  const [modalInfo, setModalInfo] = useState(null);
 
   const somenteLeitura = albumAtivo?.somenteLeitura || false;
 
@@ -45,11 +47,35 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         concluido: porcentagem,
         ultimaAlteracao: `Hoje às ${horaAtual}`
       });
-    } catch (error) { console.error("Erro ao salvar", error); }
+
+      const userLogado = localStorage.getItem('we_album_user');
+      if (userLogado && albumAtivo.deviceId && userLogado !== albumAtivo.deviceId) {
+        const notifRef = doc(db, "notificacoes", `${albumAtivo.id}_${userLogado}`);
+        await setDoc(notifRef, {
+          para: albumAtivo.deviceId,
+          de: userLogado,
+          albumNome: albumAtivo.nome,
+          lida: false,
+          tipo: 'edicao',
+          timestamp: Date.now()
+        }, { merge: true });
+      }
+
+    } catch (error) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro de Conexão', mensagem: 'Não foi possível salvar a figurinha no banco de dados.' });
+    }
+  };
+
+  const mostrarAvisoLeitura = () => {
+    setModalInfo({
+      tipo: 'aviso',
+      titulo: 'Acesso Restrito',
+      mensagem: 'Você tem apenas permissão de visualização neste álbum.'
+    });
   };
 
   const adicionarFigurinha = (id) => {
-    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
+    if (somenteLeitura) { mostrarAvisoLeitura(); return; }
     setColecao(prev => {
       const nova = { ...prev, [id]: (prev[id] || 0) + 1 };
       salvarNoBanco(nova);
@@ -58,7 +84,7 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   };
 
   const removerFigurinha = (id) => {
-    if (somenteLeitura) { alert("Você tem apenas permissão de visualização neste álbum."); return; }
+    if (somenteLeitura) { mostrarAvisoLeitura(); return; }
     setColecao(prev => {
       const atual = prev[id] || 0;
       const nova = { ...prev };
@@ -70,7 +96,7 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   };
 
   const handlePressStart = (id) => {
-    if (somenteLeitura) { alert("Você tem permissão apenas de visualização."); return; }
+    if (somenteLeitura) { mostrarAvisoLeitura(); return; }
     hasMoved.current = false;
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
@@ -120,8 +146,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const totalColadas = Object.keys(colecao).length;
   const totalFaltantes = TOTAL_FIGURINHAS - totalColadas;
   
-  // AQUI: A contagem agora reflete o número real de cartas disponíveis para troca!
-  // Em vez de contar espaços com repetidas, ele soma (qtd - 1) de cada carta que tiver mais que 1.
   const qtdRepetidas = Object.values(colecao).reduce((acc, curr) => acc + (curr > 1 ? curr - 1 : 0), 0);
 
   const verificaMatch = (termo, numFigurinha, selecaoNome, selecaoId) => {
@@ -160,8 +184,25 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
 
   return (
     <div className="app-layout">
+
+      {/* MODAL DE AVISOS DO APP (Substitui o alert do navegador) */}
+      {modalInfo && (
+        <div className="modal-overlay" onClick={() => setModalInfo(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="fechar-modal" onClick={() => setModalInfo(null)}><X size={24} /></button>
+            
+            {(modalInfo.tipo === 'erro' || modalInfo.tipo === 'aviso') && <AlertTriangle size={48} color="var(--neon-red)" style={{marginBottom: '16px'}} />}
+            {modalInfo.tipo === 'sucesso' && <CheckCircle2 size={48} color="var(--neon-green)" style={{marginBottom: '16px'}} />}
+
+            <h3 className="modal-title">{modalInfo.titulo}</h3>
+            <p className="modal-subtitle" style={{marginBottom: '24px'}}>{modalInfo.mensagem}</p>
+
+            <button className="btn-concluir" onClick={() => setModalInfo(null)}>OK, Entendi</button>
+          </div>
+        </div>
+      )}
       
-      {/* MODAL DE EDIÇÃO (Aqui mostra a quantidade TOTAL que você possui) */}
+      {/* MODAL DE EDIÇÃO */}
       {stickerEditando && (
         <div className="modal-overlay" onClick={() => setStickerEditando(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -235,6 +276,11 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
 
         </div>
         <div className="header-actions">
+          
+          {onIrParaTroca && (
+            <Repeat className="action-icon" size={22} onClick={onIrParaTroca} />
+          )}
+
           {mostrarBusca ? (
             <X 
               className="action-icon ativo" 
@@ -374,7 +420,6 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
                           onClick={() => handleStickerClick(num)}
                           onContextMenu={(e) => e.preventDefault()}
                         >
-                          {/* AQUI ESTÁ A CORREÇÃO: Mostra apenas as que sobram (qtd - 1) */}
                           {qtd > 1 && <span className="badge-repetida">x{qtd - 1}</span>}
                           
                           <div className="sticker-inner">

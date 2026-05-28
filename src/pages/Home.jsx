@@ -1,27 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Home as HomeIcon, BookOpen, Zap, ChevronRight, Plus, Share2, Download, X, Copy, Edit2, Trash2, AlertTriangle, LogIn, LogOut, ShieldCheck, Users } from 'lucide-react';
-// ADICIONEI o arrayUnion para a importação funcionar
+import { Menu, Home as HomeIcon, BookOpen, Repeat, ChevronRight, Plus, Share2, Download, X, Copy, Edit2, Trash2, AlertTriangle, LogIn, LogOut, ShieldCheck, Users, CheckCircle2 } from 'lucide-react';
 import { collection, addDoc, onSnapshot, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
+import Troca from './Troca';
+import Sininho from '../components/Sininho';
 import './Home.css';
 
-const Home = ({ onAbrirAlbum }) => {
+const Home = ({ onAbrirAlbum, abaInicial = 'inicio', albumParaTroca = null }) => {
   const [meusAlbuns, setMeusAlbuns] = useState([]); 
   const [modalNovoOpen, setModalNovoOpen] = useState(false);
   const [nomeNovoAlbum, setNomeNovoAlbum] = useState('');
   
-  // Controle das abas inferiores
-  const [abaAtiva, setAbaAtiva] = useState('inicio');
+  const [abaAtiva, setAbaAtiva] = useState(abaInicial);
 
-  // Estados de Edição/Exclusão
+  useEffect(() => {
+    setAbaAtiva(abaInicial);
+  }, [abaInicial]);
+
   const [albumEditando, setAlbumEditando] = useState(null);
   const [novoNomeEdicao, setNovoNomeEdicao] = useState('');
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-
-  // Estados de Acesso (Gerenciar Compartilhamento)
   const [modalAcessoOpen, setModalAcessoOpen] = useState(null);
 
-  // Estados de Perfil e Login
+  const [modalInfo, setModalInfo] = useState(null);
+  const [inputModalValue, setInputModalValue] = useState('');
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [inputUser, setInputUser] = useState('');
@@ -40,16 +43,13 @@ const Home = ({ onAbrirAlbum }) => {
 
   const meuId = userLogado || deviceId;
 
-  // Lógica inteligente para buscar álbuns próprios E compartilhados
   useEffect(() => {
     if (meuId === 'robson') {
       const q = query(collection(db, "albuns"), orderBy("createdAt", "desc"));
       const unsub = onSnapshot(q, snap => setMeusAlbuns(snap.docs.map(d => ({id: d.id, ...d.data()}))));
       return () => unsub();
     } else {
-      // Busca álbuns criados por mim
       const qProprios = query(collection(db, "albuns"), where("deviceId", "==", meuId));
-      // Busca álbuns que outros compartilharam comigo
       const qCompartilhados = query(collection(db, "albuns"), where("compartilhadoCom", "array-contains", meuId));
 
       let albuns1 = [];
@@ -76,8 +76,8 @@ const Home = ({ onAbrirAlbum }) => {
     if (userLower === 'robson' && inputSenha === 'supremo2026') {
       setUserLogado('robson');
       localStorage.setItem('we_album_user', 'robson');
-      alert("Acesso Supremo Ativado com Sucesso!");
       setMenuOpen(false);
+      setModalInfo({ tipo: 'sucesso', titulo: 'Acesso Supremo', mensagem: 'Modo de Mestre Supremo ativado com sucesso!' });
     } else {
       try {
         const q = query(collection(db, "usuarios"), where("usuario", "==", userLower), where("senha", "==", inputSenha));
@@ -85,12 +85,14 @@ const Home = ({ onAbrirAlbum }) => {
         if (!querySnapshot.empty) {
           setUserLogado(userLower);
           localStorage.setItem('we_album_user', userLower);
-          alert(`Bem-vindo de volta, ${userLower}!`);
           setMenuOpen(false);
+          setModalInfo({ tipo: 'sucesso', titulo: 'Bem-vindo(a)!', mensagem: `Que bom ter você de volta, ${userLower}.` });
         } else {
-          alert("Usuário ou senha incorretos.");
+          setModalInfo({ tipo: 'erro', titulo: 'Acesso Negado', mensagem: 'Usuário ou senha incorretos, ou usuário não existe.' });
         }
-      } catch (error) { alert("Erro ao realizar login no banco."); }
+      } catch (error) { 
+        setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Ocorreu um erro ao conectar com o banco de dados.' });
+      }
     }
     setInputUser(''); setInputSenha('');
   };
@@ -98,21 +100,33 @@ const Home = ({ onAbrirAlbum }) => {
   const handleCadastro = async (e) => {
     e.preventDefault();
     const userLower = inputUser.trim().toLowerCase();
-    if (inputSenha !== inputConfirmarSenha) { alert("As senhas não coincidem!"); return; }
-    if (userLower === 'robson') { alert("Este nome de usuário é reservado!"); return; }
+    
+    if (inputSenha !== inputConfirmarSenha) { 
+      setModalInfo({ tipo: 'aviso', titulo: 'Atenção', mensagem: 'As senhas não coincidem. Tente novamente.' });
+      return; 
+    }
+    if (userLower === 'robson') { 
+      setModalInfo({ tipo: 'aviso', titulo: 'Nome Inválido', mensagem: 'Este nome de usuário é reservado do sistema.' });
+      return; 
+    }
 
     try {
       const q = query(collection(db, "usuarios"), where("usuario", "==", userLower));
       const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) { alert("Usuário já em uso!"); return; }
+      if (!querySnapshot.empty) { 
+        setModalInfo({ tipo: 'aviso', titulo: 'Atenção', mensagem: 'Este nome de usuário já está sendo utilizado.' });
+        return; 
+      }
 
       await addDoc(collection(db, "usuarios"), { usuario: userLower, senha: inputSenha, createdAt: Date.now() });
       setUserLogado(userLower);
       localStorage.setItem('we_album_user', userLower);
-      alert("Conta criada com sucesso!");
       setMenuOpen(false);
       setIsLoginMode(true);
-    } catch (error) { alert("Erro ao cadastrar."); }
+      setModalInfo({ tipo: 'sucesso', titulo: 'Sucesso', mensagem: 'Conta criada e ativada perfeitamente!' });
+    } catch (error) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Ocorreu um problema ao cadastrar sua conta.' });
+    }
     setInputUser(''); setInputSenha(''); setInputConfirmarSenha('');
   };
 
@@ -121,27 +135,30 @@ const Home = ({ onAbrirAlbum }) => {
     localStorage.removeItem('we_album_user');
     setMenuOpen(false);
     setAbaAtiva('inicio');
-    alert("Você saiu da conta.");
+    setModalInfo({ tipo: 'sucesso', titulo: 'Desconectado', mensagem: 'Você saiu da sua conta com segurança.' });
   };
 
   const copiarCodigo = (e, codigo) => {
     e.stopPropagation();
     navigator.clipboard.writeText(codigo);
-    alert("Código " + codigo + " copiado!");
+    setModalInfo({ tipo: 'sucesso', titulo: 'Copiado!', mensagem: `O código ${codigo} foi copiado para sua área de transferência.` });
   };
 
   const criarAlbum = async () => {
     if (nomeNovoAlbum.trim() === '') return;
     const duplicado = meusAlbuns.find(a => a.nome.toLowerCase() === nomeNovoAlbum.toLowerCase() && a.deviceId === meuId);
-    if (duplicado) { alert("Nome duplicado!"); return; }
+    if (duplicado) { 
+      setModalInfo({ tipo: 'aviso', titulo: 'Atenção', mensagem: 'Você já possui um álbum com esse exato nome.' });
+      return; 
+    }
 
     try {
       await addDoc(collection(db, "albuns"), {
         nome: nomeNovoAlbum,
         codigo: Math.random().toString(36).substring(2, 10).toUpperCase(),
         deviceId: meuId, 
-        compartilhadoCom: [], // Lista de usuários que importaram
-        permissoes: {}, // Permissões (view/edit)
+        compartilhadoCom: [],
+        permissoes: {}, 
         concluido: 0,
         repetidas: 0,
         faltam: 994,
@@ -151,15 +168,27 @@ const Home = ({ onAbrirAlbum }) => {
       });
       setModalNovoOpen(false);
       setNomeNovoAlbum('');
-    } catch (e) { alert("Erro ao criar álbum no banco."); }
+      setModalInfo({ tipo: 'sucesso', titulo: 'Álbum Criado!', mensagem: 'Seu novo álbum está pronto para ser preenchido.' });
+    } catch (e) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Não foi possível criar o álbum no banco de dados.' });
+    }
   };
 
-  const importarAlbum = async () => {
-    const codigo = prompt("Digite o código de 8 dígitos do álbum:");
-    if (!codigo) return;
+  const abrirModalImportar = () => {
+    setModalInfo({
+      tipo: 'input',
+      titulo: 'Importar Álbum',
+      mensagem: 'Digite o código de 8 dígitos do álbum para importar:',
+      placeholder: 'Ex: A1B2C3D4',
+      onConfirm: (codigo) => processarImportacao(codigo)
+    });
+  };
+
+  const processarImportacao = async (codigo) => {
+    if (!codigo || codigo.trim() === '') return;
 
     try {
-      const q = query(collection(db, "albuns"), where("codigo", "==", codigo.toUpperCase()));
+      const q = query(collection(db, "albuns"), where("codigo", "==", codigo.toUpperCase().trim()));
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
@@ -167,23 +196,29 @@ const Home = ({ onAbrirAlbum }) => {
         const albumData = docRef.data();
 
         if (albumData.deviceId === meuId) {
-           alert("Você já é o dono deste álbum!"); return;
+           setModalInfo({ tipo: 'aviso', titulo: 'Atenção', mensagem: 'Você já é o dono deste álbum!' });
+           return;
         }
         if (albumData.compartilhadoCom && albumData.compartilhadoCom.includes(meuId)) {
-           alert("Você já importou este álbum antes!"); return;
+           setModalInfo({ tipo: 'aviso', titulo: 'Atenção', mensagem: 'Você já importou este álbum anteriormente.' });
+           return;
         }
 
-        // Adiciona a pessoa na lista de importadores com permissão de visualização (view) padrão
+        // --- AQUI AVISAMOS QUE O ÁLBUM RECEBEU UM NOVO ACESSO ---
         await updateDoc(docRef.ref, { 
            compartilhadoCom: arrayUnion(meuId),
-           [`permissoes.${meuId}`]: 'view'
+           [`permissoes.${meuId}`]: 'view',
+           temNovoAcesso: true
         });
-        alert("Álbum importado com sucesso! Verifique a aba 'Álbum'.");
-        setAbaAtiva('albuns'); // Joga a pessoa direto pra tela de Álbuns
+        
+        setModalInfo({ tipo: 'sucesso', titulo: 'Importado!', mensagem: 'Álbum importado com sucesso! Verifique a aba "Álbum".' });
+        setAbaAtiva('albuns');
       } else {
-        alert("Código não encontrado.");
+        setModalInfo({ tipo: 'erro', titulo: 'Não Encontrado', mensagem: 'Nenhum álbum encontrado com esse código.' });
       }
-    } catch (e) { alert("Erro ao importar."); }
+    } catch (e) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Ocorreu um erro ao importar o álbum.' });
+    }
   };
 
   const abrirModalEdicao = (e, album) => {
@@ -198,14 +233,20 @@ const Home = ({ onAbrirAlbum }) => {
     try {
       await updateDoc(doc(db, "albuns", albumEditando.id), { nome: novoNomeEdicao });
       setAlbumEditando(null);
-    } catch (e) { alert("Erro ao renomear."); }
+      setModalInfo({ tipo: 'sucesso', titulo: 'Salvo', mensagem: 'O nome do álbum foi atualizado.' });
+    } catch (e) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Falha ao renomear o álbum.' });
+    }
   };
 
   const confirmarExclusao = async () => {
     try {
       await deleteDoc(doc(db, "albuns", albumEditando.id));
       setAlbumEditando(null);
-    } catch (e) { alert("Erro ao excluir."); }
+      setModalInfo({ tipo: 'sucesso', titulo: 'Excluído', mensagem: 'O álbum foi apagado permanentemente.' });
+    } catch (e) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Falha ao excluir o álbum.' });
+    }
   };
 
   const alterarPermissao = async (albumId, userId, novaPermissao) => {
@@ -213,20 +254,18 @@ const Home = ({ onAbrirAlbum }) => {
       await updateDoc(doc(db, "albuns", albumId), {
         [`permissoes.${userId}`]: novaPermissao
       });
-      // Atualiza o estado do modal local para ser imediato visualmente
       setModalAcessoOpen(prev => ({ ...prev, permissoes: { ...prev.permissoes, [userId]: novaPermissao } }));
-    } catch (e) { alert("Erro ao alterar permissão."); }
+    } catch (e) { 
+      setModalInfo({ tipo: 'erro', titulo: 'Erro', mensagem: 'Falha ao atualizar permissões do usuário.' });
+    }
   };
 
-  // Separa os álbuns criados e os compartilhados
   const albunsProprios = meusAlbuns.filter(a => a.deviceId === meuId || meuId === 'robson');
   const albunsCompartilhados = meusAlbuns.filter(a => a.deviceId !== meuId && meuId !== 'robson');
 
-  // Função para renderizar o Card sem duplicar código
   const renderAlbumCard = (album) => {
     const isOwner = album.deviceId === meuId || meuId === 'robson';
     const permissao = album.permissoes?.[meuId] || 'view';
-    // Manda para o Album.jsx se o usuário atual só pode visualizar
     const bloqueiaEdicao = !isOwner && permissao !== 'edit';
 
     return (
@@ -241,8 +280,22 @@ const Home = ({ onAbrirAlbum }) => {
                   <button className="btn-edit-icon" onClick={(e) => abrirModalEdicao(e, album)}>
                     <Edit2 size={16} />
                   </button>
-                  <button className="btn-edit-icon" onClick={(e) => { e.stopPropagation(); setModalAcessoOpen(album); }}>
+                  
+                  {/* --- O BOTÃO DE USUÁRIOS AGORA TEM A BOLINHA DE AVISO --- */}
+                  <button 
+                    className="btn-edit-icon" 
+                    style={{ position: 'relative' }}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setModalAcessoOpen(album); 
+                      // Apaga a bolinha do banco de dados quando o dono clica
+                      if (album.temNovoAcesso) {
+                        updateDoc(doc(db, "albuns", album.id), { temNovoAcesso: false }).catch(() => {});
+                      }
+                    }}
+                  >
                     <Users size={16} />
+                    {album.temNovoAcesso && <span className="badge-novo-acesso"></span>}
                   </button>
                 </>
               )}
@@ -280,8 +333,54 @@ const Home = ({ onAbrirAlbum }) => {
 
   return (
     <div className="app-layout">
+
+      {modalInfo && (
+        <div className="modal-overlay" onClick={() => { if (modalInfo.tipo !== 'input') setModalInfo(null); }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="fechar-modal" onClick={() => { setModalInfo(null); setInputModalValue(''); }}><X size={24} /></button>
+            
+            {modalInfo.tipo === 'confirmacao' && <AlertTriangle size={48} color="var(--neon-yellow)" style={{marginBottom: '16px'}} />}
+            {(modalInfo.tipo === 'erro' || modalInfo.tipo === 'aviso') && <AlertTriangle size={48} color="var(--neon-red)" style={{marginBottom: '16px'}} />}
+            {modalInfo.tipo === 'sucesso' && <CheckCircle2 size={48} color="var(--neon-green)" style={{marginBottom: '16px'}} />}
+            {modalInfo.tipo === 'input' && <Download size={48} color="var(--fifa-blue)" style={{marginBottom: '16px'}} />}
+
+            <h3 className="modal-title">{modalInfo.titulo}</h3>
+            <p className="modal-subtitle" style={{marginBottom: '24px'}}>{modalInfo.mensagem}</p>
+
+            {modalInfo.tipo === 'input' && (
+              <input 
+                type="text" 
+                className="input-nome-album" 
+                placeholder={modalInfo.placeholder} 
+                value={inputModalValue} 
+                onChange={(e) => setInputModalValue(e.target.value)} 
+                autoFocus 
+                style={{ marginBottom: '24px' }}
+              />
+            )}
+
+            {modalInfo.tipo === 'confirmacao' || modalInfo.tipo === 'input' ? (
+              <div className="modal-controls-row">
+                <button className="btn-cancelar" onClick={() => { setModalInfo(null); setInputModalValue(''); }}>Cancelar</button>
+                <button className="btn-confirmar-acao" onClick={() => { 
+                  if (modalInfo.tipo === 'input') {
+                    modalInfo.onConfirm(inputModalValue);
+                    setInputModalValue('');
+                  } else {
+                    modalInfo.onConfirm(); 
+                  }
+                  setModalInfo(null); 
+                }}>
+                  {modalInfo.tipo === 'input' ? 'Importar' : 'Sim, Continuar'}
+                </button>
+              </div>
+            ) : (
+              <button className="btn-concluir" onClick={() => setModalInfo(null)}>OK, Entendi</button>
+            )}
+          </div>
+        </div>
+      )}
       
-      {/* MENU HAMBÚRGUER */}
       {menuOpen && (
         <div className="menu-drawer-overlay" onClick={() => setMenuOpen(false)}>
           <div className="menu-drawer-content" onClick={e => e.stopPropagation()}>
@@ -324,7 +423,6 @@ const Home = ({ onAbrirAlbum }) => {
         </div>
       )}
 
-      {/* MODAL DE GERENCIAR ACESSO (O ÍCONE DE PERFIL NOS ÁLBUNS) */}
       {modalAcessoOpen && (
         <div className="modal-overlay" onClick={() => setModalAcessoOpen(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -357,7 +455,6 @@ const Home = ({ onAbrirAlbum }) => {
         </div>
       )}
 
-      {/* OUTROS MODAIS */}
       {modalNovoOpen && (
         <div className="modal-overlay" onClick={() => setModalNovoOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -400,10 +497,13 @@ const Home = ({ onAbrirAlbum }) => {
           <Menu className="menu-icon" strokeWidth={2.5} onClick={() => setMenuOpen(true)} />
           <span className="brand-text">FIFA WORLD CUP</span>
         </div>
-        <Share2 className="header-action-icon" strokeWidth={2.5} size={24} />
+        
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <Sininho meuId={meuId} />
+          <Share2 className="header-action-icon" strokeWidth={2.5} size={24} />
+        </div>
       </header>
 
-      {/* CONTEÚDO BASEADO NA ABA ATIVA */}
       <main className="main-content">
         {abaAtiva === 'inicio' && (
           <>
@@ -415,7 +515,10 @@ const Home = ({ onAbrirAlbum }) => {
             <div className="divider"></div>
             <div className="add-new-section">
               <div className="add-new-card" onClick={() => setModalNovoOpen(true)}><Plus size={28} /><span>Criar novo álbum</span></div>
-              <div className="add-new-card secondary-add" onClick={importarAlbum}><Download size={24} /><span>Importar álbum</span></div>
+              
+              <div className="add-new-card secondary-add" onClick={abrirModalImportar}>
+                <Download size={24} /><span>Importar álbum</span>
+              </div>
             </div>
           </>
         )}
@@ -434,13 +537,18 @@ const Home = ({ onAbrirAlbum }) => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h2 className="section-title" style={{margin: 0}}>Compartilhados Comigo</h2>
-              <button className="btn-edit-icon" onClick={importarAlbum}><Download size={20}/></button>
+              <button className="btn-edit-icon" onClick={abrirModalImportar}><Download size={20}/></button>
             </div>
             <div className="album-section">
               {albunsCompartilhados.length > 0 ? albunsCompartilhados.map(renderAlbumCard) : <p className="modal-subtitle">Ninguém compartilhou um álbum com você ainda.</p>}
             </div>
           </>
         )}
+
+        {abaAtiva === 'troca' && (
+          <Troca meusAlbuns={meusAlbuns} meuId={meuId} albumParaTroca={albumParaTroca} />
+        )}
+
       </main>
 
       <nav className="bottom-bar">
@@ -450,7 +558,9 @@ const Home = ({ onAbrirAlbum }) => {
         <div className={`nav-item ${abaAtiva === 'albuns' ? 'active' : ''}`} onClick={() => setAbaAtiva('albuns')}>
           <BookOpen size={24}/><span>Álbum</span>
         </div>
-        <div className="nav-item"><Zap size={24}/><span>Dinâmicas</span></div>
+        <div className={`nav-item ${abaAtiva === 'troca' ? 'active' : ''}`} onClick={() => setAbaAtiva('troca')}>
+          <Repeat size={24}/><span>Troca</span>
+        </div>
       </nav>
     </div>
   );
