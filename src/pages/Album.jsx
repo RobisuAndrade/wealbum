@@ -119,42 +119,37 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   const TOTAL_FIGURINHAS = 994;
   const totalColadas = Object.keys(colecao).length;
   const totalFaltantes = TOTAL_FIGURINHAS - totalColadas;
-  const qtdRepetidas = Object.values(colecao).filter(qtd => qtd > 1).length; 
+  
+  // AQUI: A contagem agora reflete o número real de cartas disponíveis para troca!
+  // Em vez de contar espaços com repetidas, ele soma (qtd - 1) de cada carta que tiver mais que 1.
+  const qtdRepetidas = Object.values(colecao).reduce((acc, curr) => acc + (curr > 1 ? curr - 1 : 0), 0);
 
-  // --- FUNÇÃO DE BUSCA INTELIGENTE (Ignora espaços e diferencia "1" de "12") ---
   const verificaMatch = (termo, numFigurinha, selecaoNome, selecaoId) => {
     if (!termo || termo.trim() === '') return false;
     
-    // Removemos espaços e hifens para "FWC-HISTORY" e "FWC HISTORY" serem a mesma coisa
     const tLimpo = termo.toLowerCase().replace(/[\s\-]/g, ''); 
     const numNorm = numFigurinha.toLowerCase().replace(/[\s\-]/g, '');
     const nomeNorm = selecaoNome.toLowerCase().replace(/[\s\-]/g, '');
     const idNorm = selecaoId.toLowerCase().replace(/[\s\-]/g, '');
     
-    // 1. Match exato da string inteira (ex: "bra1" ou "bra 1" acha exatamente "BRA 1")
     if (numNorm === tLimpo) return true;
 
-    // 2. Se a busca for apenas por letras (ex: "bra", "brasil")
     const isOnlyLetters = /^[a-zà-ÿ]+$/.test(tLimpo);
     if (isOnlyLetters) {
       return nomeNorm.includes(tLimpo) || idNorm.includes(tLimpo);
     }
 
-    // 3. Se a busca for apenas por número (ex: "1", "12")
     const isOnlyNumbers = /^\d+$/.test(tLimpo);
     if (isOnlyNumbers) {
-      // Extrai apenas o número da figurinha para garantir que "1" ache o "1" e não o "12"
       const stickerNumber = numFigurinha.replace(/[^\d]/g, '');
       return stickerNumber === tLimpo;
     }
 
-    // 4. Caso Misto Parcial (Letra + Número. ex: "br 1" acha "BRA 1" mas não "BRA 12")
     const letrasTermo = tLimpo.replace(/[^a-zà-ÿ]/g, '');
     const numerosTermo = tLimpo.replace(/[^\d]/g, '');
     
     if (letrasTermo && numerosTermo) {
       const stickerNumber = numFigurinha.replace(/[^\d]/g, '');
-      // O número precisa ser EXATAMENTE igual, a letra pode ser parcial
       if (stickerNumber === numerosTermo) {
         return nomeNorm.includes(letrasTermo) || idNorm.includes(letrasTermo);
       }
@@ -166,13 +161,13 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
   return (
     <div className="app-layout">
       
-      {/* MODAL DE EDIÇÃO */}
+      {/* MODAL DE EDIÇÃO (Aqui mostra a quantidade TOTAL que você possui) */}
       {stickerEditando && (
         <div className="modal-overlay" onClick={() => setStickerEditando(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="fechar-modal" onClick={() => setStickerEditando(null)}><X size={24} /></button>
             <h3 className="modal-title">Figurinha {stickerEditando}</h3>
-            <p className="modal-subtitle">Ajuste a quantidade que você possui</p>
+            <p className="modal-subtitle">Quantidade total desta figurinha</p>
             
             <div className="modal-controls">
               <button className="btn-controle" onClick={() => removerFigurinha(stickerEditando)}>
@@ -258,7 +253,7 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         </div>
       </header>
 
-      {/* BARRA DE FILTROS MÚLTIPLOS (Aparece ao digitar) */}
+      {/* BARRA DE FILTROS MÚLTIPLOS */}
       {mostrarBusca && (termoInput.trim() !== '' || termosSalvos.length > 0) && (
         <div className="busca-ativa-container">
           <div className="tags-busca">
@@ -310,35 +305,30 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
         {albumData.map((grupo, index) => {
           if (filtroGrupo !== 'todos' && filtroGrupo !== grupo.id) return null;
 
-          // LÓGICA DE FILTRAGEM (Status + Busca Inteligente)
           const selecoesComFigurinhas = grupo.selecoes.map(selecao => {
             const listaBruta = selecao.figurinhasPersonalizadas || gerarFigurinhas(selecao.id, selecao.total);
             
             const filtradas = listaBruta.filter(num => {
               const qtd = colecao[num] || 0;
               
-              // 1. Verifica as Pílulas
               if (filtroStatus === 'coladas' && qtd === 0) return false;
               if (filtroStatus === 'faltantes' && qtd > 0) return false;
               if (filtroStatus === 'repetidas' && qtd <= 1) return false;
 
-              // 2. Verifica a Busca Múltipla e Sem Espaços
               const buscaAtiva = termoInput.trim() !== '' || termosSalvos.length > 0;
               
               if (buscaAtiva) {
                 let match = false;
                 
-                // Checa se a figurinha bate com ALGUM dos filtros salvos
                 if (termosSalvos.length > 0) {
                   match = termosSalvos.some(t => verificaMatch(t, num, selecao.nome, selecao.id));
                 }
                 
-                // Se ainda não bateu, tenta bater com o que a pessoa está digitando agora
                 if (!match && termoInput.trim() !== '') {
                   match = verificaMatch(termoInput, num, selecao.nome, selecao.id);
                 }
                 
-                if (!match) return false; // Se não tem em nenhum lugar da busca, oculta a figurinha!
+                if (!match) return false; 
               }
 
               return true;
@@ -384,7 +374,8 @@ const Album = ({ onVoltar, albumData: albumAtivo }) => {
                           onClick={() => handleStickerClick(num)}
                           onContextMenu={(e) => e.preventDefault()}
                         >
-                          {estaColada && <span className="badge-repetida">x{qtd}</span>}
+                          {/* AQUI ESTÁ A CORREÇÃO: Mostra apenas as que sobram (qtd - 1) */}
+                          {qtd > 1 && <span className="badge-repetida">x{qtd - 1}</span>}
                           
                           <div className="sticker-inner">
                             <span className="sticker-number">{num}</span>
